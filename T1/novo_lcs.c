@@ -131,17 +131,17 @@ char *string_char_unicos(char *seqA, char *seqB){
     int sizeC = 0;
     // leio a seqB e separo seu chars únicos escrevendo 1 em sua posição de mem. equivalente em charsetC
     for(int i = 0; i < strlen(seqA); i++){
-        if (charsetC[seqA[i]] == 0){
+        if (charsetC[(int)seqA[i]] == 0){
             sizeC += 1; // contabiliza o num. de chars diferentes existentes 
         }
-        charsetC[seqA[i]] = 1;
+        charsetC[(int)seqA[i]] = 1;
     }
     // faço o mesmo para a seqB
     for(int i = 0; i < strlen(seqB); i++){
-        if (charsetC[seqB[i]] == 0){
+        if (charsetC[(int)seqB[i]] == 0){
             sizeC += 1;
         }
-        charsetC[seqB[i]] = 1;
+        charsetC[(int)seqB[i]] = 1;
     }
 
     // aloco espaço para a string C e coloco seus valores (será sempre < 256)
@@ -153,7 +153,6 @@ char *string_char_unicos(char *seqA, char *seqB){
             j++;
         }
     }
-
 
 	return seqC;
 }
@@ -213,14 +212,15 @@ int calcula_distancia(int *linha_atual, int *linha_anterior, char *seqA, char *s
 		for(j = 1; j < sizeB + 1; j++){
 			linha_anterior[j] = linha_atual[j];
 		}
-
-		// printf("linha: %d \n", linha_atual[sizeB]);
 	}
 
 	return linha_atual[sizeB];
 }
 
 int main(int argc, char ** argv) {
+	double start_time, midi_time, stop_time;
+
+	start_time = omp_get_wtime();
 	// sequence pointers for both sequences
 	char *seqA, *seqB, *seqC;
 
@@ -234,7 +234,6 @@ int main(int argc, char ** argv) {
 	sizeA = strlen(seqA);
 	sizeB = strlen(seqB);
 	printf("Length of sequence 1: %d bp\nLength of sequence 2: %d bp\n", sizeA, sizeB);
-	double start_time, stop_time;
 
     // Criando string C 
     seqC = string_char_unicos(seqA, seqB);    
@@ -257,13 +256,14 @@ int main(int argc, char ** argv) {
         return 1;    
     }
 
-	start_time = omp_get_wtime();
+	midi_time= omp_get_wtime();
 	inicia_matriz_P(matrizP, seqB, sizeB, seqC, sizeC);
 	int res = calcula_distancia(linha_atual, linha_anterior, seqA, seqB, seqC, sizeA, sizeB, sizeC, matrizP);
 	stop_time = omp_get_wtime();
 
 	printf("res: %d\n", res);	
-	printf("tempo: %lf\n", stop_time - start_time);	
+	printf("tempo total: %lf\n", stop_time - start_time);	
+	printf("tempo paralelo: %lf\n", stop_time - midi_time);	
 
 
     return 0;

@@ -179,6 +179,7 @@ int main(int argc, char *argv[])
 	calc_P_matrix_v2(P_Matrix,string_B,len_b,unique_chars_C,c_len);
 	int res = lcs_yang_v2(DP_Results, dp_prev_row, P_Matrix,string_A,string_B,unique_chars_C,len_a,len_b,c_len);
 	stop_time = omp_get_wtime();
+	
 	printf("Length of the LCS is: %d\n",res);
 	parcent_match = ((double)res/(double)len_a)*100.0;
 	printf("%.2f%% of the first sequence matches with second one\n",parcent_match);
@@ -199,14 +200,14 @@ int main(int argc, char *argv[])
 		// dp_prev_row[l]=0;
 	// }
 
-	// printf("\n##################################\n");
-	// printf("\n######## Sequential Results ########\n");
-	// printf("##################################\n");
-	// start_time = omp_get_wtime();
-	// int n_res = lcs(DP_Results, dp_prev_row, string_A, string_B, len_a, len_b);
-	// stop_time = omp_get_wtime();
-	// printf("Length of the LCS is: %d\n",n_res);
-	// printf("Total time taken: %lf seconds\n\n",stop_time - start_time);
+	printf("\n##################################\n");
+	printf("\n######## Sequential Results ########\n");
+	printf("##################################\n");
+	start_time = omp_get_wtime();
+	int n_res = lcs(DP_Results, dp_prev_row, string_A, string_B, len_a, len_b);
+	stop_time = omp_get_wtime();
+	printf("Length of the LCS is: %d\n",n_res);
+	printf("Total time taken: %lf seconds\n\n",stop_time - start_time);
 
 
 

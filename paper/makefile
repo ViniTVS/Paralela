@@ -26,7 +26,7 @@ OBJS = $(patsubst %.c, $(OBJDIR)/%.o, $(SRCS))
 # name of the compiler
 CC = gcc
 # additional compiler flags to pass in
-CFLAGS = -fopenmp -Wall --std=c99 -L.
+CFLAGS = -fopenmp -Wall -O3 --std=c99 -L.
 # libraries for the linker
 LIBS = -lm
 
