@@ -250,7 +250,7 @@ int main(int argc, char ** argv) {
 
 	// inicia a matriz P
 	int *matrizP = calloc(sizeC * (sizeB + 1), sizeof(int));
-	int sizeP = sizeC * (sizeB + 1);
+	// int sizeP = sizeC * (sizeB + 1);
     if (!matrizP){
         printf("Erro ao alocar matriz R");
         return 1;    
