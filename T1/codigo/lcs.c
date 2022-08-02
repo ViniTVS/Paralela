@@ -68,51 +68,6 @@ char* read_seq(char *fname) {
 	return seq;
 }
 
-mtype ** allocateScoreMatrix(int sizeA, int sizeB) {
-	int i;
-	//Allocate memory for LCS score matrix
-	mtype ** scoreMatrix = (mtype **) malloc((sizeB + 1) * sizeof(mtype *));
-	for (i = 0; i < (sizeB + 1); i++)
-		scoreMatrix[i] = (mtype *) malloc((sizeA + 1) * sizeof(mtype));
-	return scoreMatrix;
-}
-
-void initScoreMatrix(mtype ** scoreMatrix, int sizeA, int sizeB) {
-	int i, j;
-	//Fill first line of LCS score matrix with zeroes
-	for (j = 0; j < (sizeA + 1); j++)
-		scoreMatrix[0][j] = 0;
-
-	//Do the same for the first collumn
-	for (i = 1; i < (sizeB + 1); i++)
-		scoreMatrix[i][0] = 0;
-}
-
-int LCS(mtype ** scoreMatrix, int sizeA, int sizeB, char * seqA, char *seqB) {
-	int i, j;
-	for (i = 1; i < sizeB + 1; i++) {
-		for (j = 1; j < sizeA + 1; j++) {
-			if (seqA[j - 1] == seqB[i - 1]) {
-				/* if elements in both sequences match,
-				 the corresponding score will be the score from
-				 previous elements + 1*/
-				scoreMatrix[i][j] = scoreMatrix[i - 1][j - 1] + 1;
-			} else {
-				/* else, pick the maximum value (score) from left and upper elements*/
-				scoreMatrix[i][j] =
-						max(scoreMatrix[i-1][j], scoreMatrix[i][j-1]);
-			}
-		}
-	}
-	return scoreMatrix[sizeB][sizeA];
-}
-
-void freeScoreMatrix(mtype **scoreMatrix, int sizeB) {
-	int i;
-	for (i = 0; i < (sizeB + 1); i++)
-		free(scoreMatrix[i]);
-	free(scoreMatrix);
-}
 
 /**
  * @brief Cria a string que possui os caracteres únicos presentes nas strings de entrada seqA e seqB.
@@ -220,6 +175,15 @@ int calcula_distancia(int *linha_atual, int *linha_anterior, char *seqA, char *s
 int main(int argc, char ** argv) {
 	double start_time, midi_time, stop_time;
 
+	if (argc < 3){
+		printf("Não foram especificados arquivos de entrada.");
+		exit(1);
+	}
+	if (argc == 4){
+		omp_set_num_threads(atoi(argv[3]));
+	}
+
+
 	start_time = omp_get_wtime();
 	// sequence pointers for both sequences
 	char *seqA, *seqB, *seqC;
@@ -228,8 +192,8 @@ int main(int argc, char ** argv) {
 	int sizeA, sizeB, sizeC;
 
 	//read both sequences
-	seqA = read_seq("fileA.in");
-	seqB = read_seq("fileB.in");
+	seqA = read_seq(argv[1]);
+	seqB = read_seq(argv[2]);
 	//find out sizes
 	sizeA = strlen(seqA);
 	sizeB = strlen(seqB);
