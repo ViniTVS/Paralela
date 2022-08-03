@@ -123,6 +123,7 @@ int inidice_em_c(char *str_c,char chr){
 	return -1;
 }
 
+
 void inicia_matriz_P(int *P, char *b, int len_b, char *c, int len_c){
 	#pragma omp parallel for
 	for(int i = 0; i < len_c; i++){
@@ -137,7 +138,28 @@ void inicia_matriz_P(int *P, char *b, int len_b, char *c, int len_c){
 	}
 }
 
-int calcula_distancia(int *linha_atual, int *linha_anterior, char *seqA, char *seqB, char *seqC, int sizeA, int sizeB, int sizeC, int *matrizP){
+/**
+ * @brief Algoritmo para cálculo do Problema da Maior Subsequência Comum utilizando como base o algoritmo
+ * desenvolvido por Yang et al. Durante a execução os vetores de entrada linha_atual e linha_anterior
+ * passam a ter novos valores escritos.
+ *  
+ * @param linha_atual Vetor para armazenar os valores da linha anterior da matriz. Deve ter seus valores
+ * iniciais zerados.
+ * @param linha_anterior Vetor para armazenar os valores da linha atual da matriz. Deve ter seus valores
+ * iniciais zerados.
+ * @param seqA String A do algoritmo de Yang et al.
+ * @param seqB String B do algoritmo de Yang et al.
+ * @param seqC String C do algoritmo de Yang et al de caracteres únicos presentes em seqA e seqB.
+ * @param sizeA Tamanho da string A.
+ * @param sizeB Tamanho da string B.
+ * @param sizeC Tamanho da string C.
+ * @param matrizP Matriz P do algoritmo de Yang et al armazenada em forma de array. Deve ser de tamanho 
+ * sizeC * (sizeB + 1).
+ * 
+ * @return int Tamanho da maior subsequência comum entre seqA e seqB.
+ */
+int calcula_lcs(int *linha_atual, int *linha_anterior, char *seqA, char *seqB, char *seqC, 
+						int sizeA, int sizeB, int sizeC, int *matrizP){
 	// O tamanho da matriz R seria de (sizeA + 1) x (sizeB + 1) 
 	// Como utilizamos somente a linha atual e a linha anterior daquilo que seria a matriz R,
 	// não é necessário alocar ela inteira. Então só usamos estas 2 linhas 
@@ -168,11 +190,15 @@ int calcula_distancia(int *linha_atual, int *linha_anterior, char *seqA, char *s
 		linha_atual = linha_anterior;
 		linha_anterior = temp;
 	}
+	// o algoritmo faz uma troca entre as linhas a mais que devia na última iteração, então a corrigimos
+	temp = linha_atual;
+	linha_atual = linha_anterior;
+	linha_anterior = temp;
 
 	return linha_atual[sizeB];
 }
 
-int main(int argc, char ** argv) {
+int main(int argc, char **argv) {
 	double start_time, midi_time, stop_time;
 
 	if (argc < 3){
@@ -182,23 +208,18 @@ int main(int argc, char ** argv) {
 	if (argc == 4){
 		omp_set_num_threads(atoi(argv[3]));
 	}
-
-
 	start_time = omp_get_wtime();
-	// sequence pointers for both sequences
+	// ponteiros p/ as strings
 	char *seqA, *seqB, *seqC;
-
-	// sizes of both sequences
+	// tamanho das strings
 	int sizeA, sizeB, sizeC;
-
-	//read both sequences
+	// lê os arquivos especificados na entrada
 	seqA = read_seq(argv[1]);
 	seqB = read_seq(argv[2]);
-	//find out sizes
+	
 	sizeA = strlen(seqA);
 	sizeB = strlen(seqB);
-	printf("Length of sequence 1: %d bp\nLength of sequence 2: %d bp\n", sizeA, sizeB);
-
+	
     // Criando string C 
     seqC = string_char_unicos(seqA, seqB);    
     if (!seqC){
@@ -207,10 +228,8 @@ int main(int argc, char ** argv) {
     } 
 	sizeC = strlen(seqC);
 
-
 	int *linha_atual = calloc( sizeB + 1, sizeof(int)); 
 	int *linha_anterior = calloc( sizeB + 1, sizeof(int));
-	
 
 	// inicia a matriz P
 	int *matrizP = calloc(sizeC * (sizeB + 1), sizeof(int));
@@ -222,12 +241,12 @@ int main(int argc, char ** argv) {
 
 	midi_time= omp_get_wtime();
 	inicia_matriz_P(matrizP, seqB, sizeB, seqC, sizeC);
-	int res = calcula_distancia(linha_atual, linha_anterior, seqA, seqB, seqC, sizeA, sizeB, sizeC, matrizP);
+	int res = calcula_lcs(linha_atual, linha_anterior, seqA, seqB, seqC, sizeA, sizeB, sizeC, matrizP);
 	stop_time = omp_get_wtime();
 
-	printf("res: %d\n", res);	
-	printf("tempo total: %lf\n", stop_time - start_time);	
-	printf("tempo paralelo: %lf\n", stop_time - midi_time);	
+	printf("%d\n", res);	
+	printf("%lf\n", stop_time - start_time);	
+	printf("%lf\n", stop_time - midi_time);	
 
 
     return 0;
