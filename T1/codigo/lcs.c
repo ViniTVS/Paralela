@@ -141,7 +141,7 @@ int calcula_distancia(int *linha_atual, int *linha_anterior, char *seqA, char *s
 	// O tamanho da matriz R seria de (sizeA + 1) x (sizeB + 1) 
 	// Como utilizamos somente a linha atual e a linha anterior daquilo que seria a matriz R,
 	// não é necessário alocar ela inteira. Então só usamos estas 2 linhas 
-	
+	int *temp;
 	// quando i = 0, seu valor é sempre 0
 	for(int i = 1; i < sizeA; i++){
 		// c denota o índice do char A[i - 1] na string C.
@@ -159,14 +159,14 @@ int calcula_distancia(int *linha_atual, int *linha_anterior, char *seqA, char *s
 				linha_atual[j] = linha_anterior[j];
 			}
 		}
-		// Aqui é como se tivesse uma barreira
-		// espera todas as threads acabarem de executar para eviar uma racing condition
+		// Aqui é como se tivesse uma barreira, espera todas as threads acabarem de executar 
+		// para eviar uma racing condition
 		
-		// linha anterior passa a ter os valores da atual
-		#pragma omp parallel for schedule(static)
-		for(j = 1; j < sizeB + 1; j++){
-			linha_anterior[j] = linha_atual[j];
-		}
+		// A linha anterior passa a ser a linha atual e vice-versa. Não tem porblema a linha anterior
+		//  ter os mesmos dados da anteriror pois serão sobre-escritos 
+		temp = linha_atual;
+		linha_atual = linha_anterior;
+		linha_anterior = temp;
 	}
 
 	return linha_atual[sizeB];
