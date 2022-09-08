@@ -12,12 +12,6 @@
 
 typedef unsigned short mtype;
 
-
-typedef union{
-    mtype num;
-    char chr;
-} charToShort;
-
 // #define DEBUGMATRIX
 
 /* Read sequence from a file to a char vector.
@@ -121,6 +115,19 @@ int inidice_em_c(char *str_c,char chr){
 	}
 	// não encontra char na string c
 	return -1;
+}
+
+
+void print_matrix(int *P, int len_b, int len_c){
+    printf("Matriz:");
+
+    for(int i = 0; i < len_c; i++){
+		printf("\n");
+        // não faz para j = 0 pois essa coluna possui somente 0s
+		for(int j = 0; j < len_b + 1; j++){
+			printf("%d ", P[i*(len_b + 1) + j]);
+		}
+	}
 }
 
 
@@ -241,6 +248,9 @@ int main(int argc, char **argv) {
 
 	midi_time= omp_get_wtime();
 	inicia_matriz_P(matrizP, seqB, sizeB, seqC, sizeC);
+    // print_matrix(matrizP, sizeB, sizeC);
+    // return 0;
+
 	int res = calcula_lcs(linha_atual, linha_anterior, seqA, seqB, seqC, sizeA, sizeB, sizeC, matrizP);
 	stop_time = omp_get_wtime();
 

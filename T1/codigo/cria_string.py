@@ -1,5 +1,6 @@
 import random
 import string
+import sys
 
 def get_random_string(length):
     # choose from all lowercase letter
@@ -8,5 +9,7 @@ def get_random_string(length):
     # print("Random string of length", length, "is:", result_str)
     print(result_str)
 
-
-get_random_string(100000)
+if (len(sys.argv) < 2):
+    print("Falta passar o número de chars!")
+    sys.exit(0)
+get_random_string(int(sys.argv[1]))
