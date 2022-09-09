@@ -37,6 +37,7 @@ void print_matrix(int *P, int len_b, int len_c){
 			printf("%d ", P[i*(len_b + 1) + j]);
 		}
 	}
+    printf("\n");
 }
 
 void calc_P_matrix_v2(int *P, char *b, int len_b, char *c, int len_c, int myrank, int chunk_size, int resto_chunk, int num_procs){
@@ -62,6 +63,8 @@ void calc_P_matrix_v2(int *P, char *b, int len_b, char *c, int len_c, int myrank
 
     // now gather all the calculated values of P matrix in process 0
     MPI_Gather(receive_array_for_scatter_p, chunk_size * (len_b + 1), MPI_INT, P, chunk_size * (len_b + 1), MPI_INT, 0, MPI_COMM_WORLD);
+    // barreira para garantir que todas as threads chegaram até aqui
+    MPI_Barrier(MPI_COMM_WORLD);
 
     // parte que sobra para computar no último processo 
     if (myrank == 0){        
@@ -75,33 +78,73 @@ void calc_P_matrix_v2(int *P, char *b, int len_b, char *c, int len_c, int myrank
             }
         }
     }
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 
-int lcs_yang_v2(int *DP, int *prev_row, int *P, char *A, char *B, char *C, int m, int n, int u, int myrank, int chunk_size){
+/*  DP = vetor com resultados,
+    prev_row = vetor com resultados anteriores
+    P = "matriz" P
+    string A 
+    string B 
+    string C
+    m = tam A 
+    n = tam B 
+    u = tam C
+    rank
+    chunk_size 
+*/ 
+int lcs_yang_v2(int *DP, int *prev_row, int *P, char *A, char *B, char *C, int m, int n, int u, int myrank, int chunk_size, int resto_chunk, int num_procs){
     MPI_Bcast(P, (u * (n + 1)), MPI_INT, 0, MPI_COMM_WORLD);
-    for (int i = 1; i < m + 1; i++){
-        int c_i = get_index_of_character(C, A[i - 1], u);
-        int dp_i_receive[chunk_size];
-        MPI_Scatter(DP, chunk_size, MPI_INT, &dp_i_receive, chunk_size, MPI_INT, 0, MPI_COMM_WORLD);
-        int start_id = (myrank * chunk_size);
-        int end_id = (myrank * chunk_size) + chunk_size;
+	int *temp;
+    int i, j, t, s, c_i;
+    // calcula qual parte esta thread deve fazer:
+    int start_id = (myrank * chunk_size);
+    int end_id = (myrank * chunk_size) + chunk_size;
+    int dp_i_receive[chunk_size];
 
-        int t, s;
+    for (i = 1; i < m + 1; i++){
+        // incide do char em C:
+        c_i = get_index_of_character(C, A[i - 1], u);
+        // vetor que recebe dados:
+        //  divide a tarefa entre as threads
+        MPI_Scatter(DP, chunk_size, MPI_INT, dp_i_receive, chunk_size, MPI_INT, 0, MPI_COMM_WORLD);
 
-        for (int j = start_id; j < end_id; j++){
-            if (j == start_id && myrank == 0)
-                j = j + 1;
+        // se j for zero, a gente pula seu cálculo
+        if (j == 0)
+            j = 1;
+
+        for (j = start_id; j < end_id; j++){
             t = (0 - P[(c_i * (n + 1)) + j]) < 0;
             s = (0 - (prev_row[j] - (t * prev_row[P[(c_i * (n + 1)) + j] - 1])));
             dp_i_receive[j - start_id] = ((t ^ 1) || (s ^ 0)) * (prev_row[j]) + (!((t ^ 1) || (s ^ 0))) * (prev_row[P[(c_i * (n + 1)) + j] - 1] + 1);
         }
+
         // now gather all the calculated values of P matrix in process 0
         MPI_Allgather(dp_i_receive, chunk_size, MPI_INT, DP, chunk_size, MPI_INT, MPI_COMM_WORLD);
+        MPI_Barrier(MPI_COMM_WORLD);
 
-        for (int j = 1; j < n + 1; j++){
-            prev_row[j] = DP[j];
+        if (myrank == 0){        
+            for (j = n + 1 - resto_chunk; j < n + 1; j++){
+                if(c_i){
+                    DP[j] = max(prev_row[j], prev_row[c_i - 1] + 1);
+                } else {
+                    // DP[j] = max(prev_row[j], 0);
+                    // mas como prev_row[j] >= 0, então basta pegar o da prev_row[j];
+                    DP[j] = prev_row[j];
+                }
+            }
         }
+        
+        // troca as linhas da coluna
+		temp = DP;
+		DP = prev_row;
+		prev_row = temp;
+        // MPI_Barrier(MPI_COMM_WORLD);
     }
+    // troca as linhas da coluna
+    temp = DP;
+    DP = prev_row;
+    prev_row = temp;
     return DP[n];
 }
 
@@ -226,6 +269,7 @@ int main(int argc, char *argv[]){
     chunk_size_p = (c_len / num_procs);
     int resto_p = (c_len % num_procs);
     chunk_size_dp = ((len_b + 1) / num_procs);
+    int resto_dp = ((len_b + 1) % num_procs);
 
     // if (my_rank == 0){
     //     printf("chunk_p: %d chunk_dp: %d procs: %d\n", chunk_size_p, chunk_size_dp, num_procs);
@@ -239,25 +283,26 @@ int main(int argc, char *argv[]){
     start_time = MPI_Wtime();
 
     calc_P_matrix_v2(P_Matrix, string_B, len_b, unique_chars_C, c_len, my_rank, chunk_size_p, resto_p, num_procs);
+    
+    
     // MPI_Finalize();
-    
-    
     // if (my_rank == 0){
     //     print_matrix(P_Matrix, len_b, c_len);
     // }
     // return 0;
 
-    res = lcs_yang_v2(DP_Results, dp_prev_row, P_Matrix, string_A, string_B, unique_chars_C, len_a, len_b, c_len, my_rank, chunk_size_dp);
+    res = lcs_yang_v2(DP_Results, dp_prev_row, P_Matrix, string_A, string_B, unique_chars_C, len_a, len_b, c_len, my_rank, chunk_size_dp, resto_dp, num_procs);
 
     stop_time = MPI_Wtime();
 
     if (my_rank == 0){
-        printf("lcs_yang_v2 is: %d\n", res);
+        printf("\nlcs_yang_v2 is: %d\n", res);
         printf("time taken for lcs_yang_v2 is: %lf\n", stop_time - start_time);
     }
     // deallocate pointers
     free(P_Matrix);
     free(DP_Results);
+    free(dp_prev_row);
 
     // Shutdown MPI (important - don't forget!)
     MPI_Finalize();

@@ -58,3 +58,6 @@ clean:
 
 run:
 	mpirun row_wise_v2 ../testes/10000000A ../testes/10000000B
+
+import:
+	module load mpi/openmpi-x86_64
