@@ -139,7 +139,7 @@ int lcs_yang_v2(int *DP, int *prev_row, int *P, char *A, char *B, char *C, int m
 		temp = DP;
 		DP = prev_row;
 		prev_row = temp;
-        // MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Barrier(MPI_COMM_WORLD);
     }
     // troca as linhas da coluna
     temp = DP;
