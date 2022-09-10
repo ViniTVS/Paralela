@@ -119,7 +119,7 @@ int inidice_em_c(char *str_c,char chr){
 
 
 void print_matrix(int *P, int len_b, int len_c){
-    printf("Matriz:");
+    printf("\nMatriz:");
 
     for(int i = 0; i < len_c; i++){
 		printf("\n");
@@ -128,6 +128,7 @@ void print_matrix(int *P, int len_b, int len_c){
 			printf("%d ", P[i*(len_b + 1) + j]);
 		}
 	}
+	printf("\n");
 }
 
 
