@@ -1,26 +1,21 @@
 import os
 import numpy as np 
 
-path = "../testes/"
+path = "./"
 
 arquivos = [
 #    ["DNA10000A", "DNA10000B", "DNA 10000"],
     #["DNA50000A", "DNA100000B", "DNA 50000"],
     #["DNA100000A", "DNA100000B", "DNA 100000"],
-    #["DNA500000A", "DNA500000B", "DNA 500000"],
-    #["10000A", "10000B", 10000],
-#    ["50000A", "50000B", 50000],
-    ["50000A", "100000B", 50000],
-    ["100000A", "100000B", 100000],
-    ["10000A", "500000B", 500000],
-    ["100000A", "500000B", 500000],
-    ["500000A", "500000B", 500000],
+    ["100000.in", "200000.in2", 100000],
+    ["200000.in", "200000.in2", "2 x 4"],
+    ["200000.in", "400000.in2", "4 x 4"]
 ]
 
 
 f = open("saida.txt", "w")
 
-for n_threads in reversed(range(1,5)):
+for n_threads in [8, 4, 2, 1]:
     print("Padrão de saída: \nmédia; DP;")
     print("\tExecutando código com " + str(n_threads) + " thread(s):")
     f.write("Padrão de saída: \nmédia; DP;" + "\n")
