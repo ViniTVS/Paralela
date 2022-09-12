@@ -1,0 +1,17 @@
+Padrão de saída: 
+média; DP;
+	Executando código com 8 --use-hwthread-cpus thread(s):
+Teste de arquivos de entrada 100000.in e 200000.in2
+97.3082956; 1.159301818736191; 
+Teste de arquivos de entrada 200000.in e 200000.in2
+191.89109495; 2.8726329932222554; 
+Teste de arquivos de entrada 200000.in e 400000.in2
+446.97209675000005; 6.063367630654306; 
+Padrão de saída: 
+média; DP;
+	Executando código com 4 thread(s):
+Teste de arquivos de entrada 100000.in e 200000.in2
+53.4664734; 1.1170398473671557; 
+Teste de arquivos de entrada 200000.in e 200000.in2
+105.86327374999999; 3.225125604370731; 
+Teste de arquivos de entrada 200000.in e 400000.in2
