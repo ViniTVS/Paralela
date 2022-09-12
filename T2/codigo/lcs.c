@@ -302,11 +302,8 @@ int main(int argc, char **argv) {
     int chunk_r = ((len_b + 1) / num_procs);
     int resto_r = ((len_b + 1) % num_procs);
 
-    start_time = MPI_Wtime();
-
 	midi_time = MPI_Wtime();
 	inicia_matriz_P(matrizP, seqB, len_b, seqC, len_c, my_rank, chunk_size_p, resto_p);
-    
 
 	int res = calcula_lcs(linha_atual, linha_anterior, seqA, seqB, seqC, len_a, len_b, len_c, matrizP, my_rank, chunk_r, resto_r);
 	stop_time = MPI_Wtime();

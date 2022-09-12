@@ -55,6 +55,7 @@ clean:
 	rm -rf object/
 	rm -f $(PROG)
 	rm -rf output.txt
+	rm -rf teste/
 
 import:
 	module load mpi/openmpi-x86_64
